@@ -9,11 +9,12 @@ HX711 scale;
 
 void setup() {
 
-    //Set baud rate (tranmission speed)
-    Serial.begin(9600);
+  //Set baud rate (tranmission speed)
+  Serial.begin(9600);
 
-    //Initialize the pins on the Hx711           
-    scale.begin(DOUT_PIN, SCK_PIN);
+  //Initialize the pins on the Hx711           
+  scale.begin(DOUT_PIN, SCK_PIN);
+  
   
   //Delay at the beginning to initalize
   delay(1000);
@@ -25,20 +26,20 @@ void setup() {
 
 void loop() {
 
-    //Check if the scale/load cell/HX711 is ready
-    if (scale.is_ready()) {   
+  //Check if the scale/load cell/HX711 is ready
+  if (scale.is_ready()) {   
 
-        //Put what is read into a weight varible and print
-        float weight = scale.read(); // Read the raw data from the HX711
-        Serial.print("Weight Data: ");       // Print prefix "Data: "
-        Serial.println(weight);     // Output the raw reading value
+      //Put what is read into a weight varible and print
+      float weight = scale.read();
+      Serial.print("Spice Weight Data: ");     
+      Serial.println(weight);     
 
-    } 
+  } 
     
-    //Check if HX711 is connect and pins are ready
-    else {
+  //Check if HX711 is connect and pins are ready
+  else {
 
-        Serial.println("HX711 not ready: Check physical connection or restart.");
+      Serial.println("HX711 not ready: Check physical connection or restart.");
 
   }
   
