@@ -18,6 +18,9 @@ void setup() {
   //Delay at the beginning to initalize
   delay(1000);
 
+  //Tare scale with average of readings
+  scale.tare();
+
 }
 
 void loop() {
@@ -40,6 +43,6 @@ void loop() {
   }
   
   //Set delay between readings
-  delay(1000);
+  delay(2000);
 
 }
