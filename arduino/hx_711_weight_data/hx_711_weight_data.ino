@@ -4,6 +4,9 @@
 #define DOUT_PIN 3
 #define SCK_PIN  2
 
+// Define the known weight for calibration
+#define CALIBRATION_WEIGHT_GRAMS 50.0f 
+
 //Instantiate the scale from the library
 HX711 scale;
 
@@ -14,13 +17,63 @@ void setup() {
 
     //Initialize the pins on the Hx711           
     scale.begin(DOUT_PIN, SCK_PIN);
-  
-  //Delay at the beginning to initalize
-  delay(1000);
 
-  //Tare scale with average of readings
-  scale.tare();
+    Serial.println("HX711 Initialized.");
+    Serial.println("Ensure scale is empty. Taring...");
 
+    //Tare the scale with 20 readings for stability to set the zero reference.
+    scale.tare(20); 
+    Serial.println("Tare complete. Scale zeroed.");
+
+    //Give time to place the weight and for the load cell to settle
+    Serial.println("Place the " + String(CALIBRATION_WEIGHT_GRAMS, 1) + "g calibration weight on the scale.");
+    Serial.println("Waiting for 8 seconds to allow placement and for readings to stabilize...");
+    delay(8000); 
+
+    if (scale.is_ready()) {
+
+        Serial.println("Reading value for calibration...");
+        
+        //Get an average of 10 raw ADC readings for the calibration weight.
+        //This value is relative to the tare point.
+        long reading_for_calibration = scale.get_value(10); 
+        Serial.print("Raw ADC value for ");
+        Serial.print(CALIBRATION_WEIGHT_GRAMS, 1);
+        Serial.print("g: ");
+        Serial.println(reading_for_calibration);
+
+        //Calculate the calibration factor: (raw ADC reading) / (known weight in grams)
+        float calibration_factor = (float)reading_for_calibration / CALIBRATION_WEIGHT_GRAMS;
+        scale.set_scale(calibration_factor);
+
+        //Print more refined.
+        Serial.print("Calibration factor calculated and set: ");
+        Serial.println(calibration_factor, 4); 
+        Serial.println("Calibration complete. You can remove the calibration weight.");
+        Serial.println("The scale will now output weight in grams.");
+
+        //Give time to remove the weight
+        Serial.println("Waiting for  seconds before final tare...");
+        delay(8000); 
+        Serial.println("Taring scale again to set zero with new calibration...");
+
+         // Tare again now that scale factor is set
+        scale.tare(20);
+        Serial.println("Scale re-zeroed. Ready to measure.");
+
+    } 
+    
+    else {
+
+        Serial.println("HX711 not ready during calibration. Check connections and restart.");
+        
+        //Halt execution if calibration fails
+        while(1) { 
+
+            delay(100); 
+
+        }
+    }
 }
 
 void loop() {
@@ -28,21 +81,23 @@ void loop() {
     //Check if the scale/load cell/HX711 is ready
     if (scale.is_ready()) {   
 
-        //Put what is read into a weight varible and print
-        float weight = scale.read(); // Read the raw data from the HX711
-        Serial.print("Weight Data: ");       // Print prefix "Data: "
-        Serial.println(weight);     // Output the raw reading value
+        // Read the weight in grams, using the calibration factor.
+        // Get an average of 10 readings for stability.
+        float weight = scale.get_units(10); 
+        Serial.print("Weight: ");
+        Serial.print(weight, 2); // Print weight with 2 decimal places
+        Serial.println(" g");
 
     } 
-    
+
     //Check if HX711 is connect and pins are ready
     else {
 
         Serial.println("HX711 not ready: Check physical connection or restart.");
 
-  }
+    }
   
-  //Set delay between readings
-  delay(2000);
+    //Set delay between readings
+    delay(1000);
 
 }
