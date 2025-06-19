@@ -4,18 +4,18 @@
 #define DOUT_PIN 3
 #define SCK_PIN  2
 
-// Define the known weight for calibration
+// Define the known weight for calibration weight as a float, global variable.
 #define CALIBRATION_WEIGHT_GRAMS 50.0f 
 
-//Instantiate the scale from the library
+//Instantiate the scale from the library.
 HX711 scale;
 
 void setup() {
 
-    //Set baud rate (tranmission speed)
+    //Set baud rate (tranmission speed).
     Serial.begin(9600);
 
-    //Initialize the pins on the Hx711           
+    //Initialize the pins on the Hx711.        
     scale.begin(DOUT_PIN, SCK_PIN);
 
     Serial.println("HX711 Initialized.");
@@ -36,14 +36,14 @@ void setup() {
         
         //Get an average of 10 raw ADC readings for the calibration weight.
         //This value is relative to the tare point.
-        long reading_for_calibration = scale.get_value(10); 
+        long number_readings = scale.get_value(10); 
         Serial.print("Raw ADC value for ");
         Serial.print(CALIBRATION_WEIGHT_GRAMS, 1);
         Serial.print("g: ");
-        Serial.println(reading_for_calibration);
+        Serial.println(number_readings);
 
-        //Calculate the calibration factor: (raw ADC reading) / (known weight in grams)
-        float calibration_factor = (float)reading_for_calibration / CALIBRATION_WEIGHT_GRAMS;
+        //Calculate the calibration factor, cast so it doesn't trim decimals
+        float calibration_factor = (float)number_readings / CALIBRATION_WEIGHT_GRAMS;
         scale.set_scale(calibration_factor);
 
         //Print more refined.
@@ -57,7 +57,7 @@ void setup() {
         delay(8000); 
         Serial.println("Taring scale again to set zero with new calibration...");
 
-         // Tare again now that scale factor is set
+         //Tare again now that scale factor is set
         scale.tare(20);
         Serial.println("Scale re-zeroed. Ready to measure.");
 
@@ -70,7 +70,7 @@ void setup() {
         //Halt execution if calibration fails
         while(1) { 
 
-            delay(100); 
+            delay(1000); 
 
         }
     }
@@ -85,7 +85,7 @@ void loop() {
         // Get an average of 10 readings for stability.
         float weight = scale.get_units(10); 
         Serial.print("Weight: ");
-        Serial.print(weight, 2); // Print weight with 2 decimal places
+        Serial.print(weight, 2); //2 decimal places
         Serial.println(" g");
 
     } 
