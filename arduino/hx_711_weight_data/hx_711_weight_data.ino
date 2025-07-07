@@ -4,8 +4,6 @@
 #define DOUT_PIN 3
 #define SCK_PIN  2
 
-// Define the known weight for calibration weight as a float, global variable.
-
 #define CALIBRATION_WEIGHT_GRAMS 50.0f 
 
 //Instantiate the scale from the library.
@@ -16,8 +14,7 @@ void setup() {
     //Set baud rate (tranmission speed).
     Serial.begin(9600);
 
-    //Initialize the pins on the HX711           
-
+    //Initialize the pins on the Hx711.        
     scale.begin(DOUT_PIN, SCK_PIN);
 
     Serial.println("HX711 Initialized.");
