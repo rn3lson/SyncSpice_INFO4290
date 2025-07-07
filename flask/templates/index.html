@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyncSpice - Live Weight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f4f9; color: #333;}
+        .container { text-align: center; background: white; padding: 40px 50px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 3px solid #fd7e14;}
+        .title { font-size: 2.5rem; color: #fd7e14;margin-bottom: 20px; font-weight: 700;}
+        .weight-display { font-size: 4.5rem; margin: 0; color: #28a745;font-weight: 700; }
+        p { color: #555; margin-top: 15px; font-weight: 500;}
+        .unit { font-size: 2rem; color: #888; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Sync Spice</h1>
+        <div class="weight-display">
+            <span id="weight-display">--</span>
+            <span class="unit">g</span>
+        </div>
+        <p>Last reading at: <span id="timestamp-display">Waiting for data...</span></p>
+    </div>
+
+    <script>
+        // Grab the latest weight with Flask
+        async function updateWeight() {
+            try {
+                const response = await fetch('/latest_weight');
+                const data = await response.json();
+
+                if (data.weight !== 'N/A') {
+                    // Update the weight and timestamp on the page
+                    const pstTimeOptions = { timeZone: 'America/Los_Angeles', hour12: false, year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit' };
+                    const pstTimestamp = new Date(data.timestamp).toLocaleString('en-US', pstTimeOptions);
+                    document.getElementById('weight-display').textContent = data.weight.toFixed(2);
+                    document.getElementById('timestamp-display').textContent = pstTimestamp;
+                }
+            } catch (error) {
+                console.error("Error fetching weight:", error);
+            }
+        }
+
+        // Call the function once on page load
+        updateWeight();
+
+        // And then call it again every 2 seconds to get live updates
+        setInterval(updateWeight, 2000);
+    </script>
+</body>
+</html>
