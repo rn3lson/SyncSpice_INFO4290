@@ -4,18 +4,20 @@
 #define DOUT_PIN 3
 #define SCK_PIN  2
 
-//Define the known weight for calibration as a float
+// Define the known weight for calibration weight as a float, global variable.
+
 #define CALIBRATION_WEIGHT_GRAMS 50.0f 
 
-//Instantiate the scale from the library
+//Instantiate the scale from the library.
 HX711 scale;
 
 void setup() {
 
-    //Set baud rate (tranmission speed)
+    //Set baud rate (tranmission speed).
     Serial.begin(9600);
 
     //Initialize the pins on the HX711           
+
     scale.begin(DOUT_PIN, SCK_PIN);
 
     Serial.println("HX711 Initialized.");
@@ -38,14 +40,14 @@ void setup() {
         
         //Get an average of 10 raw ADC readings for the calibration weight.
         //This value is relative to the tare point.
-        long reading_for_calibration = scale.get_value(10); 
+        long number_readings = scale.get_value(10); 
         Serial.print("Raw ADC value for ");
         Serial.print(CALIBRATION_WEIGHT_GRAMS, 1);
         Serial.print("g: ");
-        Serial.println(reading_for_calibration);
+        Serial.println(number_readings);
 
-        //Calculate the calibration factor: (raw ADC reading) / (known weight in grams)
-        float calibration_factor = (float)reading_for_calibration / CALIBRATION_WEIGHT_GRAMS;
+        //Calculate the calibration factor, cast so it doesn't trim decimals
+        float calibration_factor = (float)number_readings / CALIBRATION_WEIGHT_GRAMS;
         scale.set_scale(calibration_factor);
 
         //Print more refined.
@@ -88,7 +90,9 @@ void loop() {
         // Read the weight in grams, using the calibration factor.
         // Get an average of 10 readings for stability.
         float weight = scale.get_units(10); 
+      
         Serial.println(weight, 2); // Print only the numeric weight value for easy parsing
+
     } 
 
     //Check if HX711 is connect and pins are ready
