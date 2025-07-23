@@ -3,50 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SyncSpice - Live Weight</title>
+    <title>SyncSpice Scale</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f4f9; color: #333;}
-        .container { text-align: center; background: white; padding: 40px 50px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 3px solid #fd7e14;}
-        .title { font-size: 2.5rem; color: #fd7e14;margin-bottom: 20px; font-weight: 700;}
-        .weight-display { font-size: 4.5rem; margin: 0; color: #28a745;font-weight: 700; }
-        p { color: #555; margin-top: 15px; font-weight: 500;}
-        .unit { font-size: 2rem; color: #888; font-weight: 500; }
+        body {
+
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f4f0; /* Light green background */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+
+            text-align: center;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+
+        }
+        h1 {
+
+            color: #2e7d32; /* Deep green */
+            margin-bottom: 20px;
+
+        }
+        .weight-display {
+
+            font-size: 5em;
+            font-weight: 300;
+            color: #2e7d32; /* Matching deep green */
+            margin: 10px 0;
+
+        }
+        .unit {
+
+            font-size: 1.2em;
+            color: #666;
+            margin-top: -10px;
+            margin-bottom: 30px;
+
+        }
+        button {
+
+            font-size: 1em;
+            color: white;
+            background-color: #f57c00; /* Vibrant orange */
+            border: none;
+            padding: 12px 24px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+
+        }
+        button:hover {
+
+            background-color: #ef6c00; /* Darker orange on hover */
+
+        }
+        button:active {
+
+            transform: scale(0.98);
+
+        }
+        .status {
+
+            margin-top: 25px;
+            min-height: 20px;
+            color: #555;
+            font-style: italic;
+            
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="title">Sync Spice</h1>
-        <div class="weight-display">
-            <span id="weight-display">--</span>
-            <span class="unit">g</span>
+        
+        <h1>Live Spice Weight</h1>
+        <div class="weight-display" id="weight">N/A</div>
+        <p class="unit">grams</p>
+
+        <div>
+            <button onclick="tareScale()">Tare (Zero) Scale</button>
+            <button onclick="calibrateScale()">Calibrate Scale</button>
         </div>
-        <p>Last reading at: <span id="timestamp-display">Waiting for data...</span></p>
+
+        <div id="status-message" class="status"></div>
     </div>
 
     <script>
-        // Grab the latest weight with Flask
+        // Function to fetch the latest weight and update the display
         async function updateWeight() {
             try {
+
                 const response = await fetch('/latest_weight');
                 const data = await response.json();
+                document.getElementById('weight').textContent = parseFloat(data.weight).toFixed(2);
 
-                if (data.weight !== 'N/A') {
-                    // Update the weight and timestamp on the page
-                    const pstTimeOptions = { timeZone: 'America/Los_Angeles', hour12: false, year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit' };
-                    const pstTimestamp = new Date(data.timestamp).toLocaleString('en-US', pstTimeOptions);
-                    document.getElementById('weight-display').textContent = data.weight.toFixed(2);
-                    document.getElementById('timestamp-display').textContent = pstTimestamp;
-                }
             } catch (error) {
-                console.error("Error fetching weight:", error);
+
+                console.error('Error fetching weight:', error);
+                document.getElementById('weight').textContent = 'Error';
+
             }
         }
 
-        // Call the function once on page load
-        updateWeight();
+        // Function to send a command to a specific endpoint
+        async function sendCommand(endpoint) {
+            try {
 
-        // And then call it again every 2 seconds to get live updates
+                const response = await fetch(endpoint, { method: 'POST' });
+                const data = await response.json();
+                document.getElementById('status-message').textContent = data.message;
+                console.log(`Response from ${endpoint}:`, data);
+
+            } catch (error) {
+
+                console.error(`Error sending command to ${endpoint}:`, error);
+                document.getElementById('status-message').textContent = `Error sending command to ${endpoint}.`;
+
+            }
+        }
+
+        const tareScale = () => sendCommand('/tare');
+        const calibrateScale = () => sendCommand('/calibrate');
+        // Update the weight every 2 seconds
         setInterval(updateWeight, 2000);
+
+        //Initial weight update on page load
+        window.onload = updateWeight;
     </script>
+
 </body>
 </html>
